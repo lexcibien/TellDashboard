@@ -1,51 +1,67 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { useEffect, useState } from 'react';
+import { Game } from './components/Game';
+import { Job } from './components/Job';
+import { HashRouter, NavLink, Route, Routes } from 'react-router';
+import { Truck } from './components/Truck';
+import { Navigation } from './components/Navigation';
+import { Versions } from './components/Versions';
+import { Controls } from './components/Controls';
+import { Trailer } from './components/Trailer';
+import { Events } from './components/Events';
+import { EventsProvider } from './events/EventsProvider';
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+function App(): React.JSX.Element {
+  return (
+    <EventsProvider>
+      <h1>TruckSim Telemetry</h1>
+      <Content />
+    </EventsProvider>
+  );
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+const Content = function (): React.JSX.Element {
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const telemetry = window.getTelemetry();
+      setConnected(telemetry.sdkActive);
+    }, 1_000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  if (!connected) {
+    return <div>Waiting for game to connect...</div>;
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <HashRouter>
+      <nav className="nav">
+        <NavLink to="/">Game</NavLink>
+        <NavLink to="/truck">Truck</NavLink>
+        <NavLink to="/trailer">Trailer</NavLink>
+        <NavLink to="/job">Job</NavLink>
+        <NavLink to="/navigation">Navigation</NavLink>
+        <NavLink to="/controls">Controls</NavLink>
+        <NavLink to="/events">Events</NavLink>
+        <NavLink to="/versions">Versions</NavLink>
+      </nav>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      <Routes>
+        <Route path="/" element={<Game />} />
+        <Route path="/truck" element={<Truck />} />
+        <Route path="/trailer" element={<Trailer />} />
+        <Route path="/job" element={<Job />} />
+        <Route path="/navigation" element={<Navigation />} />
+        <Route path="/controls" element={<Controls />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/Versions" element={<Versions />} />
+      </Routes>
+    </HashRouter>
   );
-}
+};
 
 export default App;
