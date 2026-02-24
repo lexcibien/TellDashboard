@@ -1,6 +1,6 @@
 import { JSX, useContext } from 'react';
 import { Box } from './Box';
-import { eventsContext } from '@renderer/events/eventsContext';
+import { eventsContext } from '@/events/eventsContext';
 
 export const Events = function (): JSX.Element {
   const events = useContext(eventsContext);
